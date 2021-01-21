@@ -2,6 +2,7 @@ package main.file;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.nio.file.*;
 
 public class FileRead {
 
@@ -14,9 +15,9 @@ public class FileRead {
         return instance;
     }
 
-    public int getFileSize(File file) {
+    public String getFileSize(FileInfo fileInfo) {
         int byteCount = 0;
-        try (FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath())) {
+        try (FileInputStream fileInputStream = new FileInputStream(fileInfo.getAbsolutePath())) {
             int data = fileInputStream.read();
             // -1 indicates no more data
             while (data != -1) {
@@ -25,42 +26,41 @@ public class FileRead {
                 // next data
                 data = fileInputStream.read();
             }
-            System.out.println(file.getName() + " is " + byteCount + " bytes, or " + byteCount / 1024.0 + " kilobytes ("
-                    + (int) Math.ceil(byteCount / 1024.0) + "KB on disk).");
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
-        return byteCount;
+        return fileInfo.getName() + " is " + byteCount + " bytes, or " + byteCount / 1024.0 + " kilobytes ("
+                + (int) Math.ceil(byteCount / 1024.0) + "KB on disk).";
+    }
+
+    public String readFileAsString(String filePath) throws IOException {
+        return new String(Files.readAllBytes(Paths.get(filePath)));
     }
 
     public ArrayList<FileInfo> getFiles() {
         ArrayList<FileInfo> files = new ArrayList<FileInfo>();
         File folder = new File("src/resources");
-        File[] listOfFiles = folder.listFiles();
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                File file = listOfFiles[i];
-                FileInfo fileInfo = new FileInfo(listOfFiles[i].getAbsolutePath(), getFileSize(file),
-                        getFileType(file));
+        File[] fileArray = folder.listFiles();
+        for (int i = 0; i < fileArray.length; i++) {
+            if (fileArray[i].isFile()) {
+                FileInfo fileInfo = new FileInfo(fileArray[i].getAbsolutePath(), getFileType(fileArray[i]));
                 files.add(fileInfo);
             }
         }
         return files;
     }
 
-    public int getAmountOfLinesFromTxt(FileInfo fileInfo) {
+    public String getAmountOfLinesFromTxt(FileInfo fileInfo) {
         int amount = 0;
-        if (fileInfo.getFileType() == FileType.txt) {
-            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileInfo.getPath()))) {
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    amount++;
-                }
-            } catch (Exception ex) {
-                // exception code
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileInfo.getAbsolutePath()))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                amount++;
             }
+        } catch (Exception ex) {
+            // exception code
         }
-        return amount;
+        return "Found " + amount + " lines of text in " + fileInfo.getName();
     }
 
     public ArrayList<FileInfo> getFilesByFileType(FileType fileType, ArrayList<FileInfo> files) {
