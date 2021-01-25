@@ -66,7 +66,7 @@ public class FileRead {
 
     public ArrayList<FileInfo> getFiles() {
         ArrayList<FileInfo> files = new ArrayList<FileInfo>();
-        File folder = new File("src/resources");
+        File folder = new File("src/main/resources");
         File[] fileArray = folder.listFiles();
         for (int i = 0; i < fileArray.length; i++) {
             if (fileArray[i].isFile()) {
