@@ -3,10 +3,12 @@ package main.file;
 import java.io.*;
 import java.util.ArrayList;
 import java.nio.file.*;
+import main.logging.Logger;
 
 public class FileRead {
 
     private static FileRead instance = null;
+    Logger logger = Logger.getInstance();
 
     public static FileRead getInstance() {
         if (instance == null)
@@ -15,7 +17,16 @@ public class FileRead {
         return instance;
     }
 
+    /**
+     * Gets the size of a file in bytes by counting one at a time, logs the result
+     * to logs.txt
+     * 
+     * @param fileInfo The file to count
+     * @return The result in different forms along with execution time
+     */
+
     public String getFileSize(FileInfo fileInfo) {
+        Long startTime = logger.getCurrentTimeMs();
         int byteCount = 0;
         try (FileInputStream fileInputStream = new FileInputStream(fileInfo.getAbsolutePath())) {
             int data = fileInputStream.read();
@@ -29,13 +40,29 @@ public class FileRead {
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
-        return fileInfo.getName() + " is " + byteCount + " bytes, or " + byteCount / 1024.0 + " kilobytes ("
-                + (int) Math.ceil(byteCount / 1024.0) + "KB on disk).";
+        Long executionTime = logger.getExecutionTimeMs(startTime);
+        String result = fileInfo.getName() + " is " + byteCount + " bytes, or " + byteCount / 1024.0 + " kilobytes ";
+        logger.writeToLog(result, executionTime);
+        return result + ".. Operation took " + executionTime + " ms";
     }
+
+    /**
+     * Reads a text file as a string
+     * 
+     * @param filePath The file to read
+     * @return String containing all text
+     * @throws IOException
+     */
 
     public String readFileAsString(String filePath) throws IOException {
         return new String(Files.readAllBytes(Paths.get(filePath)));
     }
+
+    /**
+     * Gets all files from the resources folder using the Java File class
+     * 
+     * @return the files found
+     */
 
     public ArrayList<FileInfo> getFiles() {
         ArrayList<FileInfo> files = new ArrayList<FileInfo>();
@@ -50,7 +77,16 @@ public class FileRead {
         return files;
     }
 
+    /**
+     * Gets the amount of lines in a text file using buffered reader to read one
+     * line at a time
+     * 
+     * @param fileInfo The file to count
+     * @return The result along with execution time
+     */
+
     public String getAmountOfLinesFromTxt(FileInfo fileInfo) {
+        Long startTime = logger.getCurrentTimeMs();
         int amount = 0;
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileInfo.getAbsolutePath()))) {
             String line;
@@ -60,8 +96,19 @@ public class FileRead {
         } catch (Exception ex) {
             // exception code
         }
-        return "Found " + amount + " lines of text in " + fileInfo.getName();
+        Long executionTime = logger.getExecutionTimeMs(startTime);
+        String result = "Found " + amount + " lines of text in " + fileInfo.getName();
+        logger.writeToLog(result, executionTime);
+        return result + " .. Operation took " + executionTime + " ms";
     }
+
+    /**
+     * Gets all files with a given FileType
+     * 
+     * @param fileType The given FileType
+     * @param files    The ArrayList of files to search
+     * @return The files with matching FileType
+     */
 
     public ArrayList<FileInfo> getFilesByFileType(FileType fileType, ArrayList<FileInfo> files) {
         ArrayList<FileInfo> filesByType = new ArrayList<FileInfo>();
@@ -73,12 +120,27 @@ public class FileRead {
         return filesByType;
     }
 
+    /**
+     * Uses the File name to get the extension
+     */
+
     private FileType getFileType(File file) {
         String extension = "";
         int i = file.getName().lastIndexOf('.');
         if (i > 0) {
             extension = file.getName().substring(i + 1);
         }
+        return getFileTypeFromString(extension);
+    }
+
+    /**
+     * Switch returning the correct FileType
+     * 
+     * @param extension String to match with FileType
+     * @return Support FileTypes or unknown if not supported
+     */
+
+    public FileType getFileTypeFromString(String extension) {
         switch (extension) {
             case "jpg":
                 return FileType.jpg;

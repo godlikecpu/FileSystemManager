@@ -2,9 +2,18 @@ package main.file;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
 
 public class FileWrite {
+
+    public FileWrite() {
+        createLogFile();
+    }
+
+    /**
+     * Checks if the log file exists, and creates it if it doesnt
+     */
 
     public void createLogFile() {
         try {
@@ -20,12 +29,19 @@ public class FileWrite {
         }
     }
 
+    /**
+     * Writes to logs.txt
+     * 
+     * @param message the log message
+     */
+
     public void writeToFile(String message) {
-        createLogFile();
         try {
-            FileWriter myWriter = new FileWriter("src/main/logging/logs.txt");
-            myWriter.write(message);
-            myWriter.close();
+            FileWriter myWriter = new FileWriter("src/main/logging/logs.txt", true);
+            BufferedWriter bw = new BufferedWriter(myWriter);
+            bw.append(message);
+            bw.newLine();
+            bw.close();
             System.out.println("Successfully logged in logs.txt");
         } catch (IOException e) {
             System.out.println("Could not write to log");

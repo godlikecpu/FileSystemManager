@@ -1,5 +1,5 @@
 package main.file;
 
 public enum FileType {
-    txt, png, jpeg, jfif, jpg, unknown
+    txt, png, jpeg, jfif, jpg, unknown;
 }
